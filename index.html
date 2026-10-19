@@ -16,6 +16,26 @@
     </header>
 
     <main>
+        <!-- Create Note Section (Task 2) -->
+        <section class="card-section">
+            <h2>Create a Note</h2>
+            <form id="note-form">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="title-input"
+                        style="display: block; font-weight: bold; margin-bottom: 0.4rem;">Title:</label>
+                    <input type="text" id="title-input" placeholder="Enter note title (max 100 chars)..."
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="body-input"
+                        style="display: block; font-weight: bold; margin-bottom: 0.4rem;">Body:</label>
+                    <textarea id="body-input" placeholder="Enter note content (optional)..."
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; min-height: 100px;"></textarea>
+                </div>
+                <button type="submit" id="submit-btn">Create Note</button>
+            </form>
+        </section>
+
         <!-- Load Notes Section -->
         <section class="card-section">
             <h2>Manage Notes</h2>
