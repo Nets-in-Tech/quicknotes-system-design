@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickNotes System Design - API Client</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="api.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <h1>QuickNotes API Client</h1>
+        <p>Testing frontend integration with remote API</p>
+    </header>
+
+    <main>
+        <!-- Load Notes Section -->
+        <section class="card-section">
+            <h2>Manage Notes</h2>
+            <div class="actions-bar">
+                <button id="load-btn" type="button">Load notes</button>
+            </div>
+            <p id="status" role="status"></p>
+        </section>
+
+        <!-- Notes List Section -->
+        <section class="card-section">
+            <h2>Notes List</h2>
+            <ul id="notes-list">
+                <li class="empty-state">No notes loaded yet. Click "Load notes" to fetch records.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 QuickNotes. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>
