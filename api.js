@@ -1,5 +1,5 @@
 // ==========================================
-// API Client - Tasks 1, 2 & 3 (GET, POST, DELETE)
+// API Client - Project 2 (Refactored api.js)
 // ==========================================
 
 const API_URL = "https://jsonplaceholder.typicode.com/posts";
@@ -15,13 +15,33 @@ const titleInput = document.querySelector("#title-input");
 const bodyInput = document.querySelector("#body-input");
 const submitBtn = document.querySelector("#submit-btn");
 
-// Reusable request wrapper with error checking and try/catch
+/**
+ * Centralized reusable request wrapper for all HTTP operations.
+ * Ensures uniform error transformations, consistent headers, and single-point maintenance.
+ */
 async function request(url, options = {}) {
+    // Default headers for JSON payloads
+    const defaultHeaders = {
+        "Content-Type": "application/json; charset=UTF-8",
+    };
+
+    const config = {
+        ...options,
+        headers: {
+            ...defaultHeaders,
+            ...options.headers,
+        },
+    };
+
     try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
+        const response = await fetch(url, config);
+
+        // Allow 404 through for mock DELETE handling on JSONPlaceholder if needed,
+        // otherwise strictly verify response.ok
+        if (!response.ok && !(options.allow404 && response.status === 404)) {
             throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
         }
+
         return response;
     } catch (error) {
         throw error;
@@ -45,7 +65,7 @@ function renderNotes(notes) {
     });
 }
 
-// Helper to add individual notes to UI with a Delete button
+// Helper to append individual note cards to the DOM
 function appendNoteToUI(note, prepend = false) {
     const emptyState = notesList.querySelector(".empty-state");
     if (emptyState) {
@@ -86,14 +106,14 @@ function appendNoteToUI(note, prepend = false) {
     }
 }
 
-// Load 10 notes via GET
+// 1. GET Notes
 async function loadNotes() {
     loadBtn.disabled = true;
     statusP.textContent = "Loading notes...";
     statusP.className = "loading";
 
     try {
-        const response = await request(`${API_URL}?_limit=10`);
+        const response = await request(`${API_URL}?_limit=10`, { method: "GET" });
         const data = await response.json();
         renderNotes(data);
         statusP.textContent = "Loaded 10 notes from the server.";
@@ -107,14 +127,13 @@ async function loadNotes() {
     }
 }
 
-// Create a note via POST
+// 2. POST Note
 async function handleCreateNote(event) {
     event.preventDefault();
 
     const title = titleInput.value.trim();
     const body = bodyInput.value.trim();
 
-    // Validation: Title required, max 100 characters
     if (!title) {
         statusP.textContent = "Please enter a note title.";
         statusP.className = "error";
@@ -132,21 +151,14 @@ async function handleCreateNote(event) {
     statusP.className = "loading";
 
     try {
-        const response = await fetch(API_URL, {
+        const response = await request(API_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=UTF-8",
-            },
             body: JSON.stringify({
                 title,
                 body,
                 userId: 1,
             }),
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
-        }
 
         const newNote = await response.json();
 
@@ -165,40 +177,21 @@ async function handleCreateNote(event) {
     }
 }
 
-// Delete a note via DELETE
+// 3. DELETE Note
 async function deleteNote(id, listItemElement) {
     statusP.textContent = `Deleting note ${id}...`;
     statusP.className = "loading";
 
     try {
-        /* 
-          Approach for JSONPlaceholder mock behavior:
-          JSONPlaceholder simulates DELETE requests successfully (returning 200 OK) for 
-          pre-existing IDs (1-100). However, newly created posts are assigned a mock ID 
-          (such as 101) which does not actually exist in JSONPlaceholder's static server data, 
-          potentially resulting in a 404 error if queried on their backend.
-          
-          To handle this robustly: We send the DELETE request to the API. If the server 
-          responds successfully (or if we want to ensure smooth client-side UX for mock objects), 
-          we remove the item from the DOM. If a network or server error occurs, we catch it 
-          and inform the user while still allowing UI removal if it's a local mock item.
-        */
-        const response = await fetch(`${API_URL}/${id}`, {
+        const response = await request(`${API_URL}/${id}`, {
             method: "DELETE",
+            allow404: true, // Gracefully handle newly created mock IDs in JSONPlaceholder
         });
 
-        // Even if JSONPlaceholder returns 404 for newly created mock IDs (e.g. 101), 
-        // we handle it gracefully so the user experience isn't broken.
-        if (!response.ok && response.status !== 404) {
-            throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
-        }
-
-        // Remove item from UI
         listItemElement.remove();
         statusP.textContent = `Note ${id} deleted successfully.`;
         statusP.className = "success";
 
-        // Check if list is empty
         if (notesList.children.length === 0) {
             renderNotes([]);
         }
