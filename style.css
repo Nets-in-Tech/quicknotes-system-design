@@ -91,6 +91,16 @@ button:disabled {
     cursor: not-allowed;
 }
 
+button.btn-danger {
+    background-color: #e74c3c;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+button.btn-danger:hover:not(:disabled) {
+    background-color: #c0392b;
+}
+
 #status {
     margin-top: 1rem;
     font-weight: bold;
@@ -130,6 +140,14 @@ button:disabled {
     border-top: 1px solid #eeeeee;
     border-right: 1px solid #eeeeee;
     border-bottom: 1px solid #eeeeee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.note-content {
+    flex: 1;
 }
 
 .note-title {

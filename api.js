@@ -1,5 +1,5 @@
 // ==========================================
-// API Client - Task 1 & Task 2 (GET & POST)
+// API Client - Tasks 1, 2 & 3 (GET, POST, DELETE)
 // ==========================================
 
 const API_URL = "https://jsonplaceholder.typicode.com/posts";
@@ -45,7 +45,7 @@ function renderNotes(notes) {
     });
 }
 
-// Helper to add individual notes to UI
+// Helper to add individual notes to UI with a Delete button
 function appendNoteToUI(note, prepend = false) {
     const emptyState = notesList.querySelector(".empty-state");
     if (emptyState) {
@@ -55,6 +55,9 @@ function appendNoteToUI(note, prepend = false) {
     const li = document.createElement("li");
     li.className = "note-card";
 
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "note-content";
+
     const titleDiv = document.createElement("div");
     titleDiv.className = "note-title";
     titleDiv.textContent = note.title;
@@ -63,8 +66,18 @@ function appendNoteToUI(note, prepend = false) {
     bodyDiv.className = "note-body";
     bodyDiv.textContent = note.body;
 
-    li.appendChild(titleDiv);
-    li.appendChild(bodyDiv);
+    contentDiv.appendChild(titleDiv);
+    contentDiv.appendChild(bodyDiv);
+
+    // Delete Button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn-danger";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.addEventListener("click", () => deleteNote(note.id, li));
+
+    li.appendChild(contentDiv);
+    li.appendChild(deleteBtn);
 
     if (prepend) {
         notesList.prepend(li);
@@ -149,6 +162,49 @@ async function handleCreateNote(event) {
         statusP.className = "error";
     } finally {
         submitBtn.disabled = false;
+    }
+}
+
+// Delete a note via DELETE
+async function deleteNote(id, listItemElement) {
+    statusP.textContent = `Deleting note ${id}...`;
+    statusP.className = "loading";
+
+    try {
+        /* 
+          Approach for JSONPlaceholder mock behavior:
+          JSONPlaceholder simulates DELETE requests successfully (returning 200 OK) for 
+          pre-existing IDs (1-100). However, newly created posts are assigned a mock ID 
+          (such as 101) which does not actually exist in JSONPlaceholder's static server data, 
+          potentially resulting in a 404 error if queried on their backend.
+          
+          To handle this robustly: We send the DELETE request to the API. If the server 
+          responds successfully (or if we want to ensure smooth client-side UX for mock objects), 
+          we remove the item from the DOM. If a network or server error occurs, we catch it 
+          and inform the user while still allowing UI removal if it's a local mock item.
+        */
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: "DELETE",
+        });
+
+        // Even if JSONPlaceholder returns 404 for newly created mock IDs (e.g. 101), 
+        // we handle it gracefully so the user experience isn't broken.
+        if (!response.ok && response.status !== 404) {
+            throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
+        }
+
+        // Remove item from UI
+        listItemElement.remove();
+        statusP.textContent = `Note ${id} deleted successfully.`;
+        statusP.className = "success";
+
+        // Check if list is empty
+        if (notesList.children.length === 0) {
+            renderNotes([]);
+        }
+    } catch (error) {
+        statusP.textContent = `Failed to delete note: ${error.message}`;
+        statusP.className = "error";
     }
 }
 
